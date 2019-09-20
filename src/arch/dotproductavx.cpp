@@ -28,25 +28,45 @@ namespace tesseract {
 // Computes and returns the dot product of the n-vectors u and v.
 // Uses Intel AVX intrinsics to access the SIMD instruction set.
 double DotProductAVX(const double* u, const double* v, int n) {
-  const unsigned quot = n / 8;
-  const unsigned rem = n % 8;
+  const unsigned quot = n / 16;
+  const unsigned rem = n % 16;
+
   __m256d t0 = _mm256_setzero_pd();
   __m256d t1 = _mm256_setzero_pd();
+  __m256d t2 = _mm256_setzero_pd();
+  __m256d t3 = _mm256_setzero_pd();
+
   for (unsigned k = 0; k < quot; k++) {
     __m256d f0 = _mm256_loadu_pd(u);
     __m256d f1 = _mm256_loadu_pd(v);
-    f0 = _mm256_mul_pd(f0, f1);
+
+    __m256d f2 = _mm256_loadu_pd(u+4);
+    __m256d f3 = _mm256_loadu_pd(v+4);
+
+    __m256d f4 = _mm256_loadu_pd(u+8);
+    __m256d f5 = _mm256_loadu_pd(v+8+8);
+
+    __m256d f6 = _mm256_loadu_pd(u+12);
+    __m256d f7 = _mm256_loadu_pd(v+12);
+
+    t0 = _mm256_mul_pd(f0, f1);
+    t1 = _mm256_mul_pd(f2, f3);
+    t2 = _mm256_mul_pd(f4, f5);
+    t3 = _mm256_mul_pd(f6, f7);
+
     t0 = _mm256_add_pd(t0, f0);
-    u += 4;
-    v += 4;
-    __m256d f2 = _mm256_loadu_pd(u);
-    __m256d f3 = _mm256_loadu_pd(v);
-    f2 = _mm256_mul_pd(f2, f3);
-    t1 = _mm256_add_pd(t1, f2);
-    u += 4;
-    v += 4;
+    t1 = _mm256_add_pd(t1, f0);
+    t2 = _mm256_add_pd(t2, f0);
+    t3 = _mm256_add_pd(t3, f0);
+
+    u += 16;
+    v += 16;
   }
+
   t0 = _mm256_hadd_pd(t0, t1);
+  t0 = _mm256_hadd_pd(t0, t2);
+  t0 = _mm256_hadd_pd(t0, t3);
+
   alignas(32) double tmp[4];
   _mm256_store_pd(tmp, t0);
   double result = tmp[0] + tmp[1] + tmp[2] + tmp[3];
