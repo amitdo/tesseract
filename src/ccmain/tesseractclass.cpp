@@ -50,7 +50,9 @@
 namespace tesseract {
 
 Tesseract::Tesseract()
-    : BOOL_MEMBER(tessedit_resegment_from_boxes, false,
+    : 
+#ifndef DISABLED_LEGACY_ENGINE
+      BOOL_MEMBER(tessedit_resegment_from_boxes, false,
                   "Take segmentation and labeling from box file",
                   this->params()),
       BOOL_MEMBER(tessedit_resegment_from_line_boxes, false,
@@ -60,6 +62,16 @@ Tesseract::Tesseract()
                   "Generate training data from boxed chars", this->params()),
       BOOL_MEMBER(tessedit_make_boxes_from_boxes, false,
                   "Generate more boxes from boxed chars", this->params()),
+      BOOL_MEMBER(tessedit_ambigs_training, false,
+                  "Perform training for ambiguities", this->params()),
+      BOOL_MEMBER(tessedit_adaption_debug, false,
+                  "Generate and print debug"
+                  " information for adaption",
+                  this->params()),
+      INT_MEMBER(applybox_debug, 1, "Debug level", this->params()),
+      BOOL_MEMBER(tessedit_display_outwords, false, "Draw output words",
+                  this->params()),
+#endif //  ndef DISABLED_LEGACY_ENGINE
       BOOL_MEMBER(tessedit_train_line_recognizer, false,
                   "Break input into lines and remap boxes if present",
                   this->params()),
@@ -89,8 +101,6 @@ Tesseract::Tesseract()
       STRING_MEMBER(tessedit_char_unblacklist, "",
                     "List of chars to override tessedit_char_blacklist",
                     this->params()),
-      BOOL_MEMBER(tessedit_ambigs_training, false,
-                  "Perform training for ambiguities", this->params()),
       INT_MEMBER(pageseg_devanagari_split_strategy,
                  tesseract::ShiroRekhaSplitter::NO_SPLIT,
                  "Whether to use the top-line splitting process for Devanagari "
@@ -103,12 +113,7 @@ Tesseract::Tesseract()
                  this->params()),
       STRING_MEMBER(tessedit_write_params_to_file, "",
                     "Write all parameters to the given file.", this->params()),
-      BOOL_MEMBER(tessedit_adaption_debug, false,
-                  "Generate and print debug"
-                  " information for adaption",
-                  this->params()),
       INT_MEMBER(bidi_debug, 0, "Debug level for BiDi", this->params()),
-      INT_MEMBER(applybox_debug, 1, "Debug level", this->params()),
       INT_MEMBER(applybox_page, 0, "Page number to apply boxes from",
                  this->params()),
       STRING_MEMBER(applybox_exposure_pattern, ".exp",
@@ -126,8 +131,6 @@ Tesseract::Tesseract()
                   "Each bounding box"
                   " is assumed to contain ngrams. Only learn the ngrams"
                   " whose outlines overlap horizontally.",
-                  this->params()),
-      BOOL_MEMBER(tessedit_display_outwords, false, "Draw output words",
                   this->params()),
       BOOL_MEMBER(tessedit_dump_choices, false, "Dump char choices",
                   this->params()),
